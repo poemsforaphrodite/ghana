@@ -6,11 +6,8 @@
         "use": "@vercel/node"
       }
     ],
-    "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "server.js"
-      }
+    "rewrites": [
+      { "source": "/(.*)", "destination": "/server.js" }
     ],
     "env": {
       "MONGODB_URI": "mongodb+srv://admin:admin@cluster0.z5z5z.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
