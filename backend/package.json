@@ -5,7 +5,8 @@
     "main": "server.js",
     "scripts": {
       "start": "node server.js",
-      "vercel-build": "echo hello"
+      "build": "echo 'Build step completed'",
+      "vercel-build": "npm run build"
     },
     "dependencies": {
       "express": "^4.17.1",
