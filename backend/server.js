@@ -10,7 +10,7 @@ const mongoose = require('mongoose');
 const app = express();
 const PORT = process.env.PORT || 5001; // Change 5000 to 5001
 
-const allowedOrigins = ['https://ghana-pi.vercel.app', 'http://localhost:3000'];
+const allowedOrigins = ['https://ghana-pi.vercel.app', 'http://localhost:3000', 'https://ghana-api.vercel.app'];
 
 app.use(cors({
   origin: function(origin, callback){
@@ -20,7 +20,8 @@ app.use(cors({
       return callback(new Error(msg), false);
     }
     return callback(null, true);
-  }
+  },
+  credentials: true
 }));
 
 app.use(bodyParser.json());

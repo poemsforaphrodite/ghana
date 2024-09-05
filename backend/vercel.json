@@ -15,5 +15,16 @@
     "env": {
       "MONGODB_URI": "mongodb+srv://admin:admin@cluster0.z5z5z.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
       "JWT_SECRET": "8f4b6c2a1e9d7f3b5a0c8e6d4a2b9f7c5e3d1a8b6f4c2e9d7a5f3b1c8e6a4d2"
-    }
+    },
+    "headers": [
+      {
+        "source": "/api/(.*)",
+        "headers": [
+          { "key": "Access-Control-Allow-Credentials", "value": "true" },
+          { "key": "Access-Control-Allow-Origin", "value": "https://ghana-pi.vercel.app" },
+          { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
+          { "key": "Access-Control-Allow-Headers", "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization" }
+        ]
+      }
+    ]
   }
