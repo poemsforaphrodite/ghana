@@ -36,13 +36,13 @@ const mongoUri = process.env.MONGODB_URI;
 mongoose.connect(mongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-  socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+  serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
+  socketTimeoutMS: 45000,
 })
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => {
   console.error('MongoDB connection error:', err);
-  process.exit(1); // Exit the process with failure
+  process.exit(1);
 });
 
 // Add connection error handler
@@ -83,8 +83,12 @@ app.post('/signup', async (req, res) => {
     console.log('User created successfully:', username); // Log successful creation
     res.status(201).json({ message: 'User created successfully' });
   } catch (error) {
-    console.error('Error in signup:', error); // Log detailed error
-    res.status(500).json({ error: 'Error creating user', details: error.message });
+    console.error('Error in signup:', error);
+    if (error.name === 'MongooseServerSelectionError') {
+      res.status(500).json({ error: 'Unable to connect to the database. Please try again later.' });
+    } else {
+      res.status(500).json({ error: 'Error creating user', details: error.message });
+    }
   }
 });
 
