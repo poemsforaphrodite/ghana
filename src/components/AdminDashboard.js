@@ -15,7 +15,7 @@ function AdminDashboard() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5001/users', {
+      const response = await axios.get('https://ghana-api.vercel.app/users', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(response.data);
@@ -29,7 +29,7 @@ function AdminDashboard() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5001/create-user', 
+      await axios.post('https://ghana-api.vercel.app/create-user', 
         { username, password, role },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -47,7 +47,7 @@ function AdminDashboard() {
   const handleDeleteUser = async (userId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5001/delete-user/${userId}`, {
+      await axios.delete(`https://ghana-api.vercel.app/delete-user/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('User deleted successfully');
@@ -61,7 +61,7 @@ function AdminDashboard() {
   const handleApproveAdminPromotion = async (userId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5001/approve-admin-promotion/${userId}`, {}, {
+      await axios.put(`https://ghana-api.vercel.app/approve-admin-promotion/${userId}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('User promoted to admin successfully');

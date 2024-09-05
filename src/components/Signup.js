@@ -12,7 +12,7 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5001/signup', { username, password, role });
+      await axios.post('https://ghana-api.vercel.app/signup', { username, password, role });
       alert('User created successfully');
       navigate('/login');
     } catch (err) {

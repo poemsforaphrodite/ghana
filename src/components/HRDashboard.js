@@ -6,7 +6,7 @@ function HRDashboard() {
   const requestAdminPromotion = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5001/request-admin-promotion', {}, {
+      await axios.post('https://ghana-api.vercel.app/request-admin-promotion', {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('Admin promotion request sent successfully');
