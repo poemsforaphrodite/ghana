@@ -6,6 +6,7 @@ function DocumentUpload() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [analysis, setAnalysis] = useState('');
 
   const handleFileSelect = (event) => {
     setSelectedFile(event.target.files[0]);
@@ -37,8 +38,7 @@ function DocumentUpload() {
       });
       alert('Document processed successfully');
       setSelectedFile(null);
-      // Handle the response from the server if needed
-      console.log(response.data);
+      setAnalysis(response.data.analysis);
     } catch (err) {
       console.error(err);
       alert('Error processing document');
@@ -65,6 +65,13 @@ function DocumentUpload() {
           </Box>
         )}
       </Box>
+      
+      {analysis && (
+        <Box>
+          <Heading size="md" mb={4}>Document Analysis</Heading>
+          <Text whiteSpace="pre-wrap">{analysis}</Text>
+        </Box>
+      )}
     </VStack>
   );
 }

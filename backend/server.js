@@ -185,7 +185,23 @@ app.post('/process-document', upload.single('document'), async (req, res) => {
 
     await pineconeIndex.upsert(vectors);
 
-    res.json({ message: 'Document processed and indexed successfully' });
+    // Add document analysis
+    const analysisPrompt = `Analyze the following document and suggest improvements:\n\n${fileContent}`;
+
+    const analysisCompletion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {role: "system", content: "You are an expert HR document analyst."},
+        {role: "user", content: analysisPrompt}
+      ]
+    });
+
+    const analysis = analysisCompletion.choices[0].message.content.trim();
+
+    res.json({ 
+      message: 'Document processed and indexed successfully',
+      analysis: analysis
+    });
   } catch (error) {
     console.error('Error processing document:', error);
     console.error('Error details:', JSON.stringify(error, null, 2));
@@ -425,6 +441,81 @@ app.put('/approve-admin-promotion/:userId', async (req, res) => {
     res.json({ message: 'User promoted to admin successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Error promoting user to admin' });
+  }
+});
+
+// New route for generating HR documents
+app.post('/generate-document', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded.role !== 'hr' && decoded.role !== 'admin') {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    const { documentType, additionalInfo } = req.body;
+
+    const prompt = `Generate a ${documentType} policy for a company in Ghana. Include the following details: ${additionalInfo}`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {role: "system", content: "You are an expert HR policy writer for companies in Ghana."},
+        {role: "user", content: prompt}
+      ]
+    });
+
+    const generatedDocument = completion.choices[0].message.content.trim();
+
+    res.json({ document: generatedDocument });
+  } catch (error) {
+    console.error('Error generating document:', error);
+    res.status(500).json({ error: 'Error generating document', details: error.message });
+  }
+});
+
+// New route for processing CSV performance reviews
+app.post('/process-performance-review', upload.single('csvFile'), async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded.role !== 'hr' && decoded.role !== 'admin') {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const csvContent = req.file.buffer.toString('utf8');
+
+    // Here you would process the CSV content
+    // For this example, we'll just pass it to the AI for analysis
+
+    const analysisPrompt = `Analyze the following CSV performance review data. Identify top performers and recommend training:\n\n${csvContent}`;
+
+    const analysisCompletion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {role: "system", content: "You are an expert HR analyst specializing in performance reviews."},
+        {role: "user", content: analysisPrompt}
+      ]
+    });
+
+    const analysis = analysisCompletion.choices[0].message.content.trim();
+
+    res.json({ analysis: analysis });
+  } catch (error) {
+    console.error('Error processing performance review:', error);
+    res.status(500).json({ error: 'Error processing performance review', details: error.message });
   }
 });
 
