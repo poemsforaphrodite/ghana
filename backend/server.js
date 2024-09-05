@@ -16,11 +16,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
-// Connect to MongoDB
-mongoose.connect('mongodb+srv://pushpendersolanki895:8950022770@cluster0.vw9adpo.mongodb.net/ghana?retryWrites=true&w=majority&appName=Cluster0', {
-  // Remove these options
-  // useNewUrlParser: true,
-  // useUnifiedTopology: true,
+// Update MongoDB connection
+mongoose.connect(process.env.MONGODB_URI, {
+  // options if needed
 })
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('MongoDB connection error:', err));
@@ -31,6 +29,9 @@ const User = mongoose.model('User', {
   password: { type: String, required: true },
   role: { type: String, enum: ['admin', 'hr'], required: true }
 }, 'ghana'); // Specify the collection name here
+
+// Update JWT secret
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
 app.post('/signup', async (req, res) => {
   try {
@@ -65,7 +66,7 @@ app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     const user = await User.findOne({ username });
     if (user && await bcrypt.compare(password, user.password)) {
-      const token = jwt.sign({ username, role: user.role }, 'your_jwt_secret', { expiresIn: '1h' });
+      const token = jwt.sign({ username, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
       res.json({ token, role: user.role, username: user.username });
     } else {
       res.status(401).json({ error: 'Invalid credentials' });
@@ -85,7 +86,7 @@ app.post('/create-hr', async (req, res) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, 'your_jwt_secret');
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized' });
     }
@@ -109,7 +110,7 @@ app.post('/create-user', async (req, res) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, 'your_jwt_secret');
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'hr' && decoded.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized' });
     }
@@ -137,7 +138,7 @@ app.get('/users', async (req, res) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, 'your_jwt_secret');
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'admin') {  // Changed from 'hr' && 'admin' to just 'admin'
       return res.status(403).json({ error: 'Not authorized' });
     }
@@ -158,7 +159,7 @@ app.delete('/delete-user/:userId', async (req, res) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, 'your_jwt_secret');
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'hr' && decoded.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized' });
     }
@@ -179,7 +180,7 @@ app.put('/promote-to-admin/:userId', async (req, res) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, 'your_jwt_secret');
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized' });
     }
@@ -211,7 +212,7 @@ app.post('/request-admin-promotion', async (req, res) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, 'your_jwt_secret');
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'hr') {
       return res.status(403).json({ error: 'Not authorized' });
     }
@@ -239,7 +240,7 @@ app.put('/approve-admin-promotion/:userId', async (req, res) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, 'your_jwt_secret');
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized' });
     }
