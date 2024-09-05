@@ -18,6 +18,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
+// Add this new route at the beginning of your routes
+app.get('/', (req, res) => {
+  res.send('working');
+});
+
 // Update MongoDB connection
 const mongoUri = process.env.MONGODB_URI;
 mongoose.connect(mongoUri, {
