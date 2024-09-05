@@ -10,6 +10,9 @@ const mongoose = require('mongoose');
 const app = express();
 const PORT = process.env.PORT || 5001; // Change 5000 to 5001
 
+// Add this line to address the deprecation warning
+mongoose.set('strictQuery', false);
+
 const allowedOrigins = ['https://ghana-pi.vercel.app', 'http://localhost:3000', 'https://ghana-api.vercel.app'];
 
 app.use(cors({
@@ -26,10 +29,7 @@ app.use(cors({
 
 app.use(bodyParser.json());
 
-// Add this new route at the beginning of your routes
-app.get('/', (req, res) => {
-  res.send('working');
-});
+let isConnected = false; // Variable to track connection status
 
 // Update MongoDB connection
 const mongoUri = process.env.MONGODB_URI;
@@ -39,15 +39,19 @@ mongoose.connect(mongoUri, {
   serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
   socketTimeoutMS: 45000,
 })
-.then(() => console.log('Connected to MongoDB'))
+.then(() => {
+  console.log('Connected to MongoDB');
+  isConnected = true;
+})
 .catch(err => {
   console.error('MongoDB connection error:', err);
-  process.exit(1);
+  // Don't exit the process, let the server continue running
 });
 
 // Add connection error handler
 mongoose.connection.on('error', err => {
   console.error('MongoDB connection error:', err);
+  isConnected = false;
 });
 
 // Update User model
@@ -292,6 +296,15 @@ app.put('/approve-admin-promotion/:userId', async (req, res) => {
     res.json({ message: 'User promoted to admin successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Error promoting user to admin' });
+  }
+});
+
+// Update the root route
+app.get('/', (req, res) => {
+  if (isConnected) {
+    res.send('connected');
+  } else {
+    res.send('not connected');
   }
 });
 
