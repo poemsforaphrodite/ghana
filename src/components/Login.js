@@ -1,24 +1,25 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { Box, Button, FormControl, FormLabel, Input, VStack, Heading, Text, Link } from '@chakra-ui/react';
+import { Box, Button, FormControl, FormLabel, Input, VStack, Heading, Text, Link, Alert, AlertIcon } from '@chakra-ui/react';
 
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${process.env.REACT_APP_API_URL}/login`, { username, password });
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('role', res.data.role);
+      const response = await axios.post('https://ghana-api.vercel.app/login', { username, password });
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('role', response.data.role);
       localStorage.setItem('username', username);
       navigate('/dashboard');
     } catch (err) {
       console.error(err);
-      alert('Invalid credentials');
+      setError('Invalid credentials');
     }
   };
 
@@ -26,6 +27,12 @@ function Login() {
     <Box maxWidth="400px" margin="auto" mt={8}>
       <VStack spacing={4} align="stretch">
         <Heading>Log In</Heading>
+        {error && (
+          <Alert status="error">
+            <AlertIcon />
+            {error}
+          </Alert>
+        )}
         <form onSubmit={handleSubmit}>
           <VStack spacing={4}>
             <FormControl>
