@@ -11,8 +11,9 @@ function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const apiUrl = process.env.REACT_APP_API_URL || 'https://ghana-api.vercel.app';
     try {
-      await axios.post('https://ghana-api.vercel.app/signup', { username, password, role });
+      await axios.post(`${apiUrl}/signup`, { username, password, role });
       alert('User created successfully');
       navigate('/login');
     } catch (err) {

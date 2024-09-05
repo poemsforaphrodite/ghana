@@ -6,6 +6,12 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
+const fs = require('fs');
+const { Pinecone } = require('@pinecone-database/pinecone');
+const { OpenAI } = require('openai');
+const pdf = require('pdf-parse');
 
 const app = express();
 const PORT = process.env.PORT || 5001; // Change 5000 to 5001
@@ -64,6 +70,26 @@ const User = mongoose.model('User', {
 // Update JWT secret
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
+// Initialize Pinecone client
+const pc = new Pinecone({
+  apiKey: process.env.PINECONE_API_KEY,
+});
+
+let pineconeIndex;
+(async () => {
+  try {
+    pineconeIndex = await pc.Index("ghana");
+    console.log("Pinecone index initialized successfully");
+  } catch (error) {
+    console.error("Error initializing Pinecone index:", error);
+  }
+})();
+
+// Initialize OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 app.post('/signup', async (req, res) => {
   try {
     const { username, password, role } = req.body;
@@ -108,6 +134,114 @@ app.post('/login', async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: 'Error logging in' });
+  }
+});
+
+// New route for document upload
+app.post('/upload-document', upload.single('document'), async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded.role !== 'hr' && decoded.role !== 'admin') {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    let fileContent;
+    if (req.file.mimetype === 'application/pdf') {
+      const dataBuffer = fs.readFileSync(req.file.path);
+      const pdfData = await pdf(dataBuffer);
+      fileContent = pdfData.text;
+    } else {
+      fileContent = fs.readFileSync(req.file.path, 'utf8');
+    }
+   // console.log(fileContent);
+    const chunkSize = 1000;
+    const chunks = [];
+    for (let i = 0; i < fileContent.length; i += chunkSize) {
+      chunks.push(fileContent.slice(i, i + chunkSize));
+    }
+    //console.log(chunks);
+    const vectors = [];
+    for (let i = 0; i < chunks.length; i++) {
+      const embeddingResponse = await openai.embeddings.create({
+        model: "text-embedding-3-large",
+        input: chunks[i],
+        encoding_format: "float"
+      });
+      const embedding = embeddingResponse.data[0].embedding;
+      //console.log(embedding);
+      vectors.push({
+        id: `doc_${Date.now()}_chunk_${i}`,
+        values: embedding,
+        metadata: { content: chunks[i] }
+      });
+    }
+
+    await pineconeIndex.upsert(vectors);
+
+    fs.unlinkSync(req.file.path);
+
+    res.json({ message: 'Document uploaded, transcribed, and processed successfully' });
+  } catch (error) {
+    console.error('Error uploading document:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
+    res.status(500).json({ error: 'Error uploading document', details: error.message });
+  }
+});
+
+// Update the query route
+app.post('/query', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded.role !== 'hr' && decoded.role !== 'admin') {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    const { query } = req.body;
+
+    const embeddingResponse = await openai.embeddings.create({
+      model: "text-embedding-3-large",
+      input: query,
+      encoding_format: "float"
+    });
+    const queryEmbedding = embeddingResponse.data[0].embedding;
+
+    const queryResponse = await pineconeIndex.query({
+      vector: queryEmbedding,
+      topK: 3,
+      includeMetadata: true
+    });
+
+    const relevantContent = queryResponse.matches.map(match => match.metadata.content).join("\n\n");
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {role: "system", content: "You are a helpful assistant that answers questions about Ghana's labor laws."},
+        {role: "user", content: `Based on the following information about Ghana's labor laws, answer the question: "${query}"\n\nRelevant information:\n${relevantContent}`}
+      ],
+      max_tokens: 150,
+    });
+
+    const result = completion.choices[0].message.content.trim();
+
+    res.json({ result });
+  } catch (error) {
+    console.error('Error processing query:', error);
+    res.status(500).json({ error: 'Error processing query', details: error.message });
   }
 });
 

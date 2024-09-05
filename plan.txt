@@ -1,0 +1,61 @@
+Project: RAG Web Application for HR Managers
+Objective: Develop a web application that provides HR managers with tools to ask
+questions, write proposals, draft policies, and perform tasks in compliance with Ghana's
+employment laws (attached). The application will utilize a Retrieval-Augmented
+Generation (RAG) model for these purposes.
+Scope: The application should function similarly to pi.ai, focusing on HR management
+using Ghana's labor laws, tax calculations, and generative AI to draft and suggest
+improvements to HR-related documents.
+Requirements
+1. User Authentication
+ Login Form:
+o Implement a secure login form.
+o Only admin users can set up login credentials for HR officers.
+o Once logged in, HR officers should have access to the system.
+2. User Interface (UI)
+ Simple UI:
+o Develop a user-friendly interface.
+o The UI should allow HR officers to:
+ Upload the document, give web link.
+ Perform queries based on Ghana's labor laws.
+3. AI-Powered Features
+ Generative AI Capabilities:
+o Enable the system to generate compliant HR documents, such as leave
+policies, sexual harassment policies, etc.
+ Document Analysis:
+o Allow users to upload documents (e.g., job offer letters) for the system to
+suggest improvements.
+o Enable CSV file uploads for performance reviews, with the system
+identifying top performers and recommending training.
+4. Frontend Development
+ Design and Implementation:
+o Develop a responsive and intuitive frontend (should be simple).
+o Ensure seamless navigation and user interaction.
+5. Backend Development
+ Django Framework:
+o Use Django for backend development.
+o Implement user authentication, data handling, and interaction with the AI
+model.
+6. AI Model Deployment (GPT 4.0 Mini)
+ Hugging Face Deployment:
+o Deploy the RAG model using Hugging Face.
+o Use GPT 4.0 Mini Recommended but you can use any
+o Provide endpoints for frontend integration.
+Development Steps
+ Step 1:
+o Setup project environment.
+o Implement user authentication.
+o Start developing the frontend UI.
+ Step 2:
+o Develop the document analysis and generative AI features.
+ Step 3:
+o Finalize frontend and backend integration.
+o Deploy the RAG model on Hugging Face.
+ Step 4:
+o Testing and bug fixing.
+ Step 5:
+o Deployment and final review.
+Tools & Technologies
+ Frontend: React.js or Angular (based on preference)
+ Backend: Django
+ AI Model: GPT 4.0 Mini and host it on Hugging Face

@@ -12,10 +12,11 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('https://ghana-api.vercel.app/login', { username, password });
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://ghana-api.vercel.app';
+      const response = await axios.post(`${apiUrl}/login`, { username, password });
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('role', response.data.role);
-      localStorage.setItem('username', username);
+      localStorage.setItem('username', username); 
       navigate('/dashboard');
     } catch (err) {
       console.error(err);

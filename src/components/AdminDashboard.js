@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Box, Button, FormControl, FormLabel, Input, Select, VStack, Heading, Text, List, ListItem, Flex } from '@chakra-ui/react';
 
+const apiUrl = process.env.REACT_APP_API_URL || 'https://ghana-api.vercel.app';
+
 function AdminDashboard() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -15,7 +17,7 @@ function AdminDashboard() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('https://ghana-api.vercel.app/users', {
+      const response = await axios.get(`${apiUrl}/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(response.data);
@@ -29,7 +31,7 @@ function AdminDashboard() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.post('https://ghana-api.vercel.app/create-user', 
+      await axios.post(`${apiUrl}/create-user`, 
         { username, password, role },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -47,7 +49,7 @@ function AdminDashboard() {
   const handleDeleteUser = async (userId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`https://ghana-api.vercel.app/delete-user/${userId}`, {
+      await axios.delete(`${apiUrl}/delete-user/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('User deleted successfully');
@@ -61,7 +63,7 @@ function AdminDashboard() {
   const handleApproveAdminPromotion = async (userId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`https://ghana-api.vercel.app/approve-admin-promotion/${userId}`, {}, {
+      await axios.put(`${apiUrl}/approve-admin-promotion/${userId}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('User promoted to admin successfully');

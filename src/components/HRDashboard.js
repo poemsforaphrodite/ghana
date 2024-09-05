@@ -1,34 +1,54 @@
-import React from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 import { Box, Button, VStack, Heading, Text } from '@chakra-ui/react';
+import DocumentUpload from './DocumentUpload';
+import QueryPage from './QueryPage';
 
 function HRDashboard() {
+  const [currentPage, setCurrentPage] = useState('main');
+
   const requestAdminPromotion = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.post('https://ghana-api.vercel.app/request-admin-promotion', {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      alert('Admin promotion request sent successfully');
-    } catch (err) {
-      console.error(err);
-      alert('Error requesting admin promotion');
+    // ... (keep the existing implementation)
+  };
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'upload':
+        return <DocumentUpload />;
+      case 'query':
+        return <QueryPage />;
+      default:
+        return (
+          <VStack spacing={8} align="stretch">
+            <Box>
+              <Heading size="md" mb={4}>Actions</Heading>
+              <Button onClick={requestAdminPromotion} colorScheme="blue" mr={4}>
+                Request Admin Promotion
+              </Button>
+              <Button onClick={() => setCurrentPage('upload')} colorScheme="green" mr={4}>
+                Document Upload
+              </Button>
+              <Button onClick={() => setCurrentPage('query')} colorScheme="purple">
+                Query Labor Laws
+              </Button>
+            </Box>
+            <Box>
+              <Heading size="md" mb={4}>HR Information</Heading>
+              <Text>Welcome to the HR Dashboard. Here you can manage your HR tasks and request admin promotion if needed.</Text>
+            </Box>
+          </VStack>
+        );
     }
   };
 
   return (
-    <VStack spacing={8} align="stretch">
-      <Box>
-        <Heading size="md" mb={4}>Actions</Heading>
-        <Button onClick={requestAdminPromotion} colorScheme="blue">
-          Request Admin Promotion
+    <Box>
+      {currentPage !== 'main' && (
+        <Button onClick={() => setCurrentPage('main')} mb={4}>
+          Back to Dashboard
         </Button>
-      </Box>
-      <Box>
-        <Heading size="md" mb={4}>HR Information</Heading>
-        <Text>Welcome to the HR Dashboard. Here you can manage your HR tasks and request admin promotion if needed.</Text>
-      </Box>
-    </VStack>
+      )}
+      {renderPage()}
+    </Box>
   );
 }
 
