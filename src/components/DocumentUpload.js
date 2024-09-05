@@ -25,7 +25,7 @@ function DocumentUpload() {
       formData.append('document', selectedFile);
       const token = localStorage.getItem('token');
       const apiUrl = process.env.REACT_APP_API_URL || 'https://ghana-api.vercel.app';
-      await axios.post(`${apiUrl}/upload-document`, formData, {
+      const response = await axios.post(`${apiUrl}/process-document`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -35,11 +35,13 @@ function DocumentUpload() {
           setUploadProgress(percentCompleted);
         }
       });
-      alert('Document uploaded successfully');
+      alert('Document processed successfully');
       setSelectedFile(null);
+      // Handle the response from the server if needed
+      console.log(response.data);
     } catch (err) {
       console.error(err);
-      alert('Error uploading document');
+      alert('Error processing document');
     } finally {
       setIsUploading(false);
     }

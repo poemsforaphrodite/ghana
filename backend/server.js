@@ -7,8 +7,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
-const fs = require('fs');
+const upload = multer({ storage: multer.memoryStorage() });
 const { Pinecone } = require('@pinecone-database/pinecone');
 const { OpenAI } = require('openai');
 const pdf = require('pdf-parse');
@@ -138,7 +137,7 @@ app.post('/login', async (req, res) => {
 });
 
 // New route for document upload
-app.post('/upload-document', upload.single('document'), async (req, res) => {
+app.post('/process-document', upload.single('document'), async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
@@ -156,11 +155,10 @@ app.post('/upload-document', upload.single('document'), async (req, res) => {
 
     let fileContent;
     if (req.file.mimetype === 'application/pdf') {
-      const dataBuffer = fs.readFileSync(req.file.path);
-      const pdfData = await pdf(dataBuffer);
+      const pdfData = await pdf(req.file.buffer);
       fileContent = pdfData.text;
     } else {
-      fileContent = fs.readFileSync(req.file.path, 'utf8');
+      fileContent = req.file.buffer.toString('utf8');
     }
    // console.log(fileContent);
     const chunkSize = 1000;
@@ -187,13 +185,11 @@ app.post('/upload-document', upload.single('document'), async (req, res) => {
 
     await pineconeIndex.upsert(vectors);
 
-    fs.unlinkSync(req.file.path);
-
-    res.json({ message: 'Document uploaded, transcribed, and processed successfully' });
+    res.json({ message: 'Document processed and indexed successfully' });
   } catch (error) {
-    console.error('Error uploading document:', error);
+    console.error('Error processing document:', error);
     console.error('Error details:', JSON.stringify(error, null, 2));
-    res.status(500).json({ error: 'Error uploading document', details: error.message });
+    res.status(500).json({ error: 'Error processing document', details: error.message });
   }
 });
 
