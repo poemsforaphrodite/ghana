@@ -228,8 +228,7 @@ app.post('/query', async (req, res) => {
       messages: [
         {role: "system", content: "You are a helpful assistant that answers questions about Ghana's labor laws."},
         {role: "user", content: `Based on the following information about Ghana's labor laws, answer the question: "${query}"\n\nRelevant information:\n${relevantContent}`}
-      ],
-      max_tokens: 150,
+      ]
     });
 
     const result = completion.choices[0].message.content.trim();
